@@ -4,15 +4,15 @@
 
 using namespace std;
 
-class Tarjan {
+class TarjanSCC {
     int n;
-    vector<vector<int>> G, ccs;
+    vector<vector<int>> G, sccs;
     vector<int> wh, ind, lowlink;
     stack<int> st;
     vector<bool> inStack;
     int indCount;
 
-    void dfs(int x) {
+    void Dfs(int x) {
         ind[x] = ++indCount;
         lowlink[x] = ind[x];
         st.push(x);
@@ -21,43 +21,44 @@ class Tarjan {
         for (auto y : G[x]) {
             if (!ind[y] || inStack[y]) {
                 if (!ind[y])
-                    dfs(y);
+                    Dfs(y);
                 lowlink[x] = min(lowlink[x], lowlink[y]);
             }
         }
 
         if (lowlink[x] == ind[x]) {
-            vector<int> cc;
+            vector<int> scc;
             int y;
             do {
                 y = st.top();
                 st.pop();
                 inStack[y] = false;
-                wh[y] = ccs.size();
-                cc.push_back(y);
+                wh[y] = sccs.size();
+                scc.push_back(y);
             } while(y != x);
-            ccs.push_back(cc);
+            sccs.push_back(scc);
         }
     }
 
   public:
-    Tarjan(const vector<vector<int>>& G) : G(G) {
+    TarjanSCC(const vector<vector<int>>& G) : G(G) {
         n = G.size() - 1;
         wh = ind = lowlink = vector<int>(n+1);
         inStack = vector<bool>(n+1);
         indCount = 0;
 
         for (int i = 1; i <= n; ++i) {
-            if (!ind[i])
-                dfs(i);
+            if (!ind[i]) {
+                Dfs(i);
+            }
         }
     }
 
-    vector<vector<int>> getCcs() {
-        return ccs;
+    vector<vector<int>> GetSCCs() {
+        return sccs;
     }
 
-    vector<int> getWh() {
+    vector<int> GetWh() {
         return wh;
     }
 };

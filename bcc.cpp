@@ -5,18 +5,14 @@
 
 using namespace std;
 
-class BCC {
+class TarjanBCC {
     int n;
-    vector<vector<int>> G, bcs;
+    vector<vector<int>> G, bccs;
     vector<bool> isAncestor, isCritical;
     vector<int> depth, lowlink, wh;
     stack<int> st;
-
-    void criticalNode(int x) {
-
-    }
     
-    void dfs(int x, int f) {
+    void Dfs(int x, int f) {
         depth[x] = depth[f] + 1;
         lowlink[x] = depth[x];
         st.push(x);
@@ -30,7 +26,7 @@ class BCC {
 
             if (!depth[y]) {
                 // DFS edge.
-                dfs(y, x);
+                Dfs(y, x);
                 ++sons;
                 lowlink[x] = min(lowlink[x], lowlink[y]);
 
@@ -39,16 +35,16 @@ class BCC {
                     isCritical[x] = true;
 
                     // Extract component rooted at x.
-                    vector<int> bc;
+                    vector<int> bcc;
                     int z;
                     do {
                         z = st.top();
-                        wh[z] = bcs.size();
-                        bc.push_back(z);
+                        wh[z] = bccs.size();
+                        bcc.push_back(z);
                         st.pop();
                     } while (z != y);
-                    bc.push_back(x);
-                    bcs.push_back(bc);
+                    bcc.push_back(x);
+                    bccs.push_back(bcc);
                 }
 
                 if (lowlink[y] > depth[x]) {
@@ -76,7 +72,7 @@ class BCC {
     
   public:
   
-    BCC(vector<vector<int>>& G) : G(G) {
+    TarjanBCC(vector<vector<int>>& G) : G(G) {
         n = G.size() - 1;
         
         depth = lowlink = wh = vector<int>(n+1);
@@ -84,13 +80,13 @@ class BCC {
 
         for (int i = 1; i <= n; ++i) {
             if (!depth[i]) {
-                dfs(i, 0);
+                Dfs(i, 0);
             }
         }
     }
 
-    vector<vector<int>> getBcs() {
-        return bcs;
+    vector<vector<int>> GetBccs() {
+        return bccs;
     }
 };
 
@@ -111,9 +107,9 @@ int main() {
     }
 
     // cerr << "Here" << endl;
-    BCC bcc(G);
+    TarjanBCC bcc(G);
 
-    auto bcs = bcc.getBcs();
+    auto bcs = bcc.GetBccs();
 
     cout << bcs.size() << "\n";
     for (auto& bc : bcs) {
