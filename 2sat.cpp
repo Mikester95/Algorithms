@@ -63,17 +63,19 @@ class TarjanSCC {
     }
 };
 
+// Solves an instance of 2SAT, that you can add variables and restrictions to dynamically.
+// Variables have a public and private representation.
+// Publically, variables are indexed 1 through n, and their negation as -1 to -n.
+// Internally, variable i is stored as i*2 - 1, and its negation as i*2.
 class TwoSAT {
     // Number of variables.
     int n;
     // Private representation of graph.
     vector<vector<int>> G;
-    // Index of zero in private representation.
-    const int zero;
 
     // Public representation to private representation.
     int ind(int x) {
-        return x > 0 ? ((x << 1) + 1) : (((-x) << 1) + 2);
+        return x > 0 ? ((x << 1) - 1) : (((-x) << 1));
     }
 
     // Oposite of private representation.
@@ -81,7 +83,7 @@ class TwoSAT {
         return (x&1) ? x + 1 : x - 1;
     }
 
-    // Resize structure to fit n variables.
+    // Resize structure to fit at least n variables.
     void Resize(int n) {
         if (n > this->n) {
             this->n = n;
@@ -89,12 +91,14 @@ class TwoSAT {
         }
     }
 
+    // Adds an edge in the private representation.
     void AddEdge(int x, int y) {
         G[x].push_back(y);
         G[op(y)].push_back(op(x));
     }
 
   public:
+    // Operations with the public representations.
     void Implication(int x, int y) {
         Resize(max(abs(x), abs(y)));
         AddEdge(ind(x), ind(y));
@@ -107,26 +111,23 @@ class TwoSAT {
 
     void SetToZero(int x) {
         Resize(abs(x));
-        AddEdge(ind(x), zero);
+        AddEdge(ind(x), op(ind(x)));
     }
 
     void SetToOne(int x) {
         Resize(abs(x));
-        AddEdge(op(zero), ind(x));
+        AddEdge(op(ind(x)), ind(x));
     }
 
-    TwoSAT(int n=0) : n(n), zero(1) {
+    TwoSAT(int n=0) : n(n) {
         G.resize(2*n + 3);
-        // Edge from zero to op(zero) ensures its value will be zero.
-        AddEdge(zero, op(zero));
     }
 
+    // Solves the current instance using Tarjan's SCC algorithm,
+    // and returns the value attributions, or an empty vector if there is no solution.
     vector<bool> Solve() {
         TarjanSCC sccSolver(G);
         auto wh = sccSolver.GetWh();
-
-        if (wh[zero] == wh[op(zero)])
-            return {};
 
         for (int i = 1; i <= n; ++i) {
             if (wh[ind(i)] == wh[op(ind(i))])
