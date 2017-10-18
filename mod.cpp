@@ -5,8 +5,10 @@ using namespace std;
 
 typedef long long int64;
 
+const int kMod = 1e9+7;
+
+template<int M = kMod>
 struct Mod {
-    static int mod;
     int64 x;
     
     static void Euclidean(int64 a, int64 b, int64& x, int64& y) {
@@ -24,109 +26,115 @@ struct Mod {
     Mod() : x(0) {}
     
     Mod(int64 x) : x(x) {
-        if (this->x >= mod)
-            this->x %= mod;
+        if (this->x >= M)
+            this->x %= M;
         if (this->x < 0)
-            this->x += mod;
+            this->x += M;
     }
     
-    bool operator == (const Mod& other) {
+    bool operator == (const Mod<M>& other) {
         return x == other.x;
     }
     
-    bool operator != (const Mod& other) {
+    bool operator != (const Mod<M>& other) {
         return x != other.x;
     }
     
-    void operator += (const Mod& other) {
+    void operator += (const Mod<M>& other) {
         x += other.x;
-        if (x >= mod)
-            x -= mod;
+        if (x >= M)
+            x -= M;
     }
     
-    Mod operator + (const Mod& other) const {
-        Mod result = *this;
+    Mod<M> operator + (const Mod<M>& other) const {
+        Mod<M> result = *this;
         result += other;
         return result;
     }
     
-    void operator -= (const Mod& other) {
+    void operator -= (const Mod<M>& other) {
         x -= other.x;
         if (x < 0)
-            x += mod;
+            x += M;
     }
     
-    Mod operator - (const Mod& other) const {
-        Mod result = *this;
+    Mod<M> operator - (const Mod<M>& other) const {
+        Mod<M> result = *this;
         result -= other;
         return result;
     }
     
-    void operator *= (const Mod& other) {
+    void operator *= (const Mod<M>& other) {
         x *= other.x;
-        x %= mod;
+        x %= M;
     }
     
-    Mod operator * (const Mod& other) const {
-        Mod result = *this;
+    Mod<M> operator * (const Mod<M>& other) const {
+        Mod<M> result = *this;
         result *= other;
         return result;
     }
     
-    Mod Inv() const {
+    Mod<M> Inv() const {
         int64 a, b;
-        Euclidean(x, mod, a, b);
+        Euclidean(x, M, a, b);
         return a;
     }
     
-    Mod operator - () const {
-        Mod result = *this;
-        result.x = mod - result.x;
+    Mod<M> operator - () const {
+        Mod<M> result = *this;
+        result.x = M - result.x;
         return result;
     }
     
-    void operator /= (const Mod& other) {
+    void operator /= (const Mod<M>& other) {
         *this *= other.Inv();
     }
     
-    Mod operator / (const Mod& other) const {
-        Mod result = *this;
+    Mod<M> operator / (const Mod<M>& other) const {
+        Mod<M> result = *this;
         result /= other;
         return result;
     }
 };
 
-int Mod::mod = 1e9+7;
-
-ostream& operator << (ostream& out, const Mod& m) {
+template<int M = kMod>
+ostream& operator << (ostream& out, const Mod<M>& m) {
     out << m.x;
     return out;
 }
 
-istream& operator >>(istream& in, const Mod& m) {
+template<int M = kMod>
+istream& operator >>(istream& in, const Mod<M>& m) {
     in >> m.x;
     return in;
 }
 
-Mod operator + (int64 x, const Mod& other) {
+
+template<int M = kMod>
+Mod<M> operator + (int64 x, const Mod<M>& other) {
     return other + x;
 }
 
-Mod operator - (int64 x, const Mod& other) {
+template<int M = kMod>
+Mod<M> operator - (int64 x, const Mod<M>& other) {
     return x + (-other);
 }
 
-Mod operator * (int64 x, const Mod& other) {
+template<int M = kMod>
+Mod<M> operator * (int64 x, const Mod<M>& other) {
     return other * x;
 }
 
-Mod operator / (int64 x, const Mod& other) {
+template<int M = kMod>
+Mod<M> operator / (int64 x, const Mod<M>& other) {
     return other.Inv() * x;
 }
 
+template<int M = 1e9+7>
 class Combinatorics {
-    vector<Mod> fac, inv_fac;    
-    vector<vector<Mod>> comb;
+    vector<Mod<M>> fac, inv_fac;    
+    vector<vector<Mod<M>>> comb;
 
   public:
     void PrecomputeFactorials(int n) {
@@ -144,15 +152,15 @@ class Combinatorics {
         }
     }
     
-    Mod Fac(int n) {
+    Mod<M> Fac(int n) {
         return fac[n];
     }
     
-    Mod InvFac(int n) {
+    Mod<M> InvFac(int n) {
         return inv_fac[n];
     }
     
-    Mod Comb(int n, int k) {
+    Mod<M> Comb(int n, int k) {
         if (n < 0 || k > n)
             return 0;
         if (comb.empty()) {
@@ -163,5 +171,11 @@ class Combinatorics {
 };
 
 int main() {
-    
+    Mod<> m(3);
+
+    cout << m;
+
+    m = 3 + m;
+
+    cout << m;
 }
