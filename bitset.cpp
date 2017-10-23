@@ -43,8 +43,9 @@ class Bitset {
     }
 
     void set(int p, int bit) {
-        v[p >> 6] |= ((int64)bit << (p & 63));
-        v[p >> 6] &= (v[p >> 6] & ((int64)bit << (p & 63)));
+        if (bit != get(p)) {
+            v[p >> 6] ^= (1LL << (p & 63));
+        }
     }
 
     int count() const {
@@ -115,5 +116,11 @@ istream& operator >> (istream& in, Bitset& b) {
 }
 
 int main() {
-
+    Bitset b(30);
+    b.set(1, 1);
+    cout << b << "\n";
+    b.set(1, 0);
+    b.set(2, 1);
+    b.set(2, 1);
+    cout << b << "\n";
 }
