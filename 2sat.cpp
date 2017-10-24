@@ -111,12 +111,12 @@ class TwoSAT {
 
     void SetToZero(int x) {
         Resize(abs(x));
-        AddEdge(ind(x), op(ind(x)));
+        G[ind(x)].push_back(op(ind(x)));
     }
 
     void SetToOne(int x) {
         Resize(abs(x));
-        AddEdge(op(ind(x)), ind(x));
+        G[op(ind(x))].push_back(ind(x));
     }
 
     TwoSAT(int n=0) : n(n) {
