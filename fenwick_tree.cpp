@@ -3,8 +3,8 @@
 
 using namespace std;
 
-// Fenwick Tree(or Binary Indexed Tree) structure that supports queries on prefixes, and point-updates
-// for with an associative, commutative operation. 
+// Fenwick Tree(or Binary Indexed Tree) structure that supports queries on prefixes of an array, and point-updates
+// for an associative, commutative operation. 
 // Queries on intervals can be performed when the operation is also invertible.
 
 // Type T must have operator += defined on it, 
@@ -29,7 +29,7 @@ class FenTree {
     }
 
   public:
-    FenTree(int n) : n(n), lg(GetLg(n)) {
+    FenTree(int n, vector<T> init = {}) : n(n), lg(GetLg(n)), aib(init) {
         aib.resize(n+1);
     }
 
