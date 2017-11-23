@@ -34,7 +34,7 @@ class FordFulkerson{
 
     // Index of reverse edge of a given edge index.
     int rev_ind(int i) {
-    	return i ^ 1;
+        return i ^ 1;
     }
 
     // Builds a lookup table for fast queries of total between x and one of his neighbours.
@@ -63,15 +63,15 @@ class FordFulkerson{
 
     // How much empty room does edge ind have?
     inline int64 room(int ind) {
-    	return edges[ind].cap - edges[ind].flow;
+        return edges[ind].cap - edges[ind].flow;
     }
 
     inline int from(int ind) {
-    	return edges[ind].from;
+        return edges[ind].from;
     }
 
     inline int to(int ind) {
-    	return edges[ind].to;
+        return edges[ind].to;
     }
 
     // Searches for some sort of path or multitude of augmenting paths from source to sink.
@@ -122,30 +122,30 @@ class FordFulkerson{
 
     // Returns the current amount of flow.
     int64 TotalFlow() {
-    	return total_flow;
+        return total_flow;
     }
 
     // Returns the minimum src-dest cut in the form of a binary vector.
     // 1 means node is on src side, 0 means node is on dest side.
     vector<bool> GetCut() {
-    	vector<bool> visited(n + 1);
+        vector<bool> visited(n + 1);
 
-    	function<void(int)> DFS = [&](int x) {
-	  		visited[x] = true;
-	  		for (auto ind: neighbours[x]) {
-	  			if (room(ind)) {
-	  				DFS(to(ind));
-	  			}
-	  		}
-	  	};
+        function<void(int)> DFS = [&](int x) {
+            visited[x] = true;
+            for (auto ind: neighbours[x]) {
+                if (room(ind)) {
+                    DFS(to(ind));
+                }
+            }
+        };
 
-    	DFS(src);
-    	return visited;
+        DFS(src);
+        return visited;
     }
 
     // Returns the graph's edges.
     const vector<Edge>& GetEdges() {
-    	return edges;
+        return edges;
     } 
 };
 
@@ -155,7 +155,7 @@ class EdmondsKarp : public FordFulkerson {
     vector<int> last_edge;
 
     virtual bool FindPath() {
-    	last_edge.resize(n + 1);
+        last_edge.resize(n + 1);
         queue<int> Q;
         for (int i = 1; i <= n; ++i) {
             last_edge[i] = -2;
@@ -168,7 +168,7 @@ class EdmondsKarp : public FordFulkerson {
             Q.pop();
 
             for (auto ind : neighbours[x]) {
-            	int y = to(ind);
+                int y = to(ind);
                 if (room(ind) && last_edge[y] == -2) {
                     Q.push(y);
                     last_edge[y] = ind;
@@ -183,12 +183,12 @@ class EdmondsKarp : public FordFulkerson {
     }
 
   public:
-  	EdmondsKarp(int n, int src, int dest) : FordFulkerson(n, src, dest) {}
+    EdmondsKarp(int n, int src, int dest) : FordFulkerson(n, src, dest) {}
 
     virtual bool RunUnit() {
         if (FindPath()) {
             for (int x = dest; x != src; x = from(last_edge[x])) {
-            	AddFlow(last_edge[x], 1);
+                AddFlow(last_edge[x], 1);
             }
             total_flow += 1;
             return true;
@@ -198,18 +198,18 @@ class EdmondsKarp : public FordFulkerson {
 
     virtual int64 RunFlow() {
         if (FindPath()) {
-	        int64 new_flow = LONG_LONG_MAX;
+            int64 new_flow = LONG_LONG_MAX;
 
-	        for (int x = dest; x != src; x = from(last_edge[x])) {
-	        	new_flow = min(new_flow, room(last_edge[x]));
-	        }
+            for (int x = dest; x != src; x = from(last_edge[x])) {
+                new_flow = min(new_flow, room(last_edge[x]));
+            }
 
-	        for (int x = dest; x != src; x = from(last_edge[x])) {
-	        	AddFlow(last_edge[x], new_flow);
-	        }
+            for (int x = dest; x != src; x = from(last_edge[x])) {
+                AddFlow(last_edge[x], new_flow);
+            }
 
-	        total_flow += new_flow;
-	        return new_flow;
+            total_flow += new_flow;
+            return new_flow;
         }
         return 0;
     } 
@@ -219,73 +219,73 @@ class EdmondsKarp : public FordFulkerson {
 // or in O(M * min(M^1.5, N^0.66)) for unit capacity networks.
 class Dinic : public FordFulkerson {
   protected:
-  	vector<int> dist, adj_list_pointers;
+    vector<int> dist, adj_list_pointers;
 
-  	virtual bool FindPath() {
-  		dist.resize(n + 1);
-  		queue<int> Q;
-  		for (int i = 1; i <= n; ++i) {
-  			dist[i] = INT_MAX;
-  		}
-  		dist[src] = 0;
-  		Q.push(src);
+    virtual bool FindPath() {
+        dist.resize(n + 1);
+        queue<int> Q;
+        for (int i = 1; i <= n; ++i) {
+            dist[i] = INT_MAX;
+        }
+        dist[src] = 0;
+        Q.push(src);
 
-  		while (!Q.empty()) {
-  			int x = Q.front();
-  			Q.pop();
+        while (!Q.empty()) {
+            int x = Q.front();
+            Q.pop();
 
-  			for (auto ind : neighbours[x]) {
-  				int y = to(ind);
-  				if (room(ind) && dist[y] == INT_MAX) {
-  					Q.push(y);
-  					dist[y] = dist[x] + 1;
-  				}
-  			}
-  		}
+            for (auto ind : neighbours[x]) {
+                int y = to(ind);
+                if (room(ind) && dist[y] == INT_MAX) {
+                    Q.push(y);
+                    dist[y] = dist[x] + 1;
+                }
+            }
+        }
 
-  		return dist[dest] != INT_MAX;
-  	}
+        return dist[dest] != INT_MAX;
+    }
 
-  	int64 Backtrack(int x, int64 available_flow) {
-  		if (x == dest) {
-  			return available_flow;
-  		}
+    int64 Backtrack(int x, int64 available_flow) {
+        if (x == dest) {
+            return available_flow;
+        }
 
-  		int64 run_flow = 0;
-  		for (; adj_list_pointers[x] < neighbours[x].size(); 
-  			++adj_list_pointers[x]) {
-  			int i = adj_list_pointers[x];
-  			int y = to(neighbours[x][i]);
-  			if (dist[x] + 1 != dist[y])
-  				continue;
+        int64 run_flow = 0;
+        for (; adj_list_pointers[x] < neighbours[x].size(); 
+            ++adj_list_pointers[x]) {
+            int i = adj_list_pointers[x];
+            int y = to(neighbours[x][i]);
+            if (dist[x] + 1 != dist[y])
+                continue;
 
-  			int64 new_flow = Backtrack(y, min(available_flow, room(neighbours[x][i])));
-  			available_flow -= new_flow;
-  			run_flow += new_flow;
-  			AddFlow(neighbours[x][i], new_flow);
+            int64 new_flow = Backtrack(y, min(available_flow, room(neighbours[x][i])));
+            available_flow -= new_flow;
+            run_flow += new_flow;
+            AddFlow(neighbours[x][i], new_flow);
 
-  			if (!available_flow)
-  				break;
-  		}
+            if (!available_flow)
+                break;
+        }
 
-  		return run_flow;
-  	}
+        return run_flow;
+    }
 
   public:
-  	Dinic(int n, int src, int dest) : FordFulkerson(n, src, dest) {}
+    Dinic(int n, int src, int dest) : FordFulkerson(n, src, dest) {}
 
-  	virtual int64 RunFlow() {
-  		if (FindPath()) {
-	  		adj_list_pointers.resize(n + 1);
-	  		for (int i = 1; i <= n; ++i) {
-	  			adj_list_pointers[i] = 0;
-	  		}
-	  		int64 new_flow = Backtrack(src, LONG_LONG_MAX);
-	  		total_flow += new_flow;
-	  		return new_flow;
-  		}
-  		return 0;
-  	}
+    virtual int64 RunFlow() {
+        if (FindPath()) {
+            adj_list_pointers.resize(n + 1);
+            for (int i = 1; i <= n; ++i) {
+                adj_list_pointers[i] = 0;
+            }
+            int64 new_flow = Backtrack(src, LONG_LONG_MAX);
+            total_flow += new_flow;
+            return new_flow;
+        }
+        return 0;
+    }
 };
 
 // Edmonds-Karp algorithm for min-cost flow. 
@@ -385,9 +385,9 @@ class EdmondsKarpCost : public EdmondsKarp {
     }
 
     virtual bool RunUnit() {
-    	bool run = EdmondsKarp::RunUnit();
-    	total_cost += run * dist[dest];
-    	return run;
+        bool run = EdmondsKarp::RunUnit();
+        total_cost += run * dist[dest];
+        return run;
     }
 
     virtual int64 RunFlow() {
@@ -410,28 +410,28 @@ class EdmondsKarpCost : public EdmondsKarp {
 // HopcroftKarp class to find MaxMatching/MinVertexCover in Bipartite Graph.
 // It uses Dinic max flow behind the scenes, achieving M * sqrt(N) complexity.
 class HopcroftKarp {
-	int nodes;
-	vector<bool> is_left_node;
-	FordFulkerson* flow_solver;
+    int nodes;
+    vector<bool> is_left_node;
+    FordFulkerson* flow_solver;
 
   public:
-	HopcroftKarp(const vector<vector<int>>& graph) {
+    HopcroftKarp(const vector<vector<int>>& graph) {
         nodes = graph.size() - 1;
         vector<bool> visited(nodes + 1);
         is_left_node.resize(nodes + 1);
         flow_solver = new Dinic(nodes, 1, 2);
 
         function<void(int, bool)> SplitDFS = [&](int x, bool side) {
-	        visited[x] = true;
-	        is_left_node[x] = side;
+            visited[x] = true;
+            is_left_node[x] = side;
 
-	        for (auto& y : graph[x]) {
-	            if (!visited[y]) {
-	                SplitDFS(y, !side);
-	            } else if (is_left_node[y] != !is_left_node[x]) {
-	                cerr << "Graph is not bipartite!!!" << endl;
-	            }
-	        }
+            for (auto& y : graph[x]) {
+                if (!visited[y]) {
+                    SplitDFS(y, !side);
+                } else if (is_left_node[y] != !is_left_node[x]) {
+                    cerr << "Graph is not bipartite!!!" << endl;
+                }
+            }
         };
 
         for (int i = 1; i <= nodes; ++i) {
@@ -441,27 +441,27 @@ class HopcroftKarp {
         }
 
         for (int x = 1; x <= nodes; ++x) {
-        	if (is_left_node[x]) {
-        		for (auto& y : graph[x]) {
-        			flow_solver->AddEdge(x + 2, y + 2, 1);
-        		}
-        	}
+            if (is_left_node[x]) {
+                for (auto& y : graph[x]) {
+                    flow_solver->AddEdge(x + 2, y + 2, 1);
+                }
+            }
         }
 
         for (int i = 1; i <= nodes; ++i) {
-        	if (is_left_node[i]) {
-        		flow_solver->AddEdge(1, i + 2, 1);
-        	} else {
-        		flow_solver->AddEdge(i + 2, 2, 1);
-        	}
+            if (is_left_node[i]) {
+                flow_solver->AddEdge(1, i + 2, 1);
+            } else {
+                flow_solver->AddEdge(i + 2, 2, 1);
+            }
         }
-	}
+    }
 
-	~HopcroftKarp() {
-		delete flow_solver;
-	}
+    ~HopcroftKarp() {
+        delete flow_solver;
+    }
 
-	int MaxMatching() {
+    int MaxMatching() {
         return flow_solver->MaxFlow();
     }
  
@@ -469,9 +469,9 @@ class HopcroftKarp {
         vector<pair<int,int>> sol;
         sol.reserve(MaxMatching());
         for (const auto& edge: flow_solver->GetEdges()) {
-        	if (edge.flow == 1 && edge.from != 1 && edge.to != 2 && is_left_node[edge.from - 2]) {
-        		sol.push_back({edge.from - 2, edge.to - 2});
-        	}
+            if (edge.flow == 1 && edge.from != 1 && edge.to != 2 && is_left_node[edge.from - 2]) {
+                sol.push_back({edge.from - 2, edge.to - 2});
+            }
         }
         return sol;
     }
@@ -487,11 +487,11 @@ class HopcroftKarp {
     vector<int> GetVertexCover() {
         vector<int> sol;
         sol.reserve(MinVertexCover());
-       	auto cut = flow_solver->GetCut();
+        auto cut = flow_solver->GetCut();
 
         for (int i = 1; i <= nodes; ++i) {
             if (is_left_node[i] && !cut[i + 2] ||
-            	!is_left_node[i] && cut[i + 2])
+                !is_left_node[i] && cut[i + 2])
                 sol.push_back(i);
         }
         return sol;
@@ -504,7 +504,7 @@ class HopcroftKarp {
 
         for (int i = 1; i <= nodes; ++i) {
             if (is_left_node[i] && cut[i + 2] ||
-            	!is_left_node[i] && !cut[i + 2])
+                !is_left_node[i] && !cut[i + 2])
                 sol.push_back(i);
         }
         return sol;
