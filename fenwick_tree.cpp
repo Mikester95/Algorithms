@@ -29,7 +29,7 @@ class FenTree {
     }
 
   public:
-    FenTree(int n, vector<T> init = {}) : n(n), lg(GetLg(n)), aib(init) {
+    FenTree(int n) : n(n), lg(GetLg(n)) {
         aib.resize(n+1);
     }
 
