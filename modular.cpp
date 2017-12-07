@@ -131,7 +131,7 @@ Mod<M> operator / (int64 x, const Mod<M>& other) {
     return other.Inv() * x;
 }
 
-template<int M = 1e9+7>
+template<int M = kMod>
 class Combinatorics {
     vector<Mod<M>> fac, inv_fac;    
     vector<vector<Mod<M>>> comb;
