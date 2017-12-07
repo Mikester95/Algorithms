@@ -9,13 +9,13 @@ using namespace std;
 
 typedef double T;
 
-const double EPS = 1e-12;
+const T EPS = 1e-12;
 
 bool equal(const T& a, const T& b) {
     return (fabs(a - b) < EPS);
 }
 
-const double pi = acos(-1);
+const T pi = acos(-1);
 
 struct Point {
     T x, y;
@@ -48,10 +48,10 @@ struct Point {
         return {y, -x};
     }
 
-    Point rotate(double ang, const Point& around = Point(0, 0)) const {
+    Point rotate(T ang, const Point& around = Point(0, 0)) const {
         Point rot = *this - around;
-        double cs = cos(ang);
-        double sn = sin(ang);
+        T cs = cos(ang);
+        T sn = sin(ang);
         rot = Point(rot.x * cs - rot.y * sn, rot.x * sn + rot.y * cs);
         rot = rot + around;
         return rot;
@@ -72,7 +72,7 @@ struct Point {
         return y < other.y;
     }
 
-    double len() const {
+    T len() const {
         return sqrt(x*x + y*y);
     }
 
@@ -81,11 +81,21 @@ struct Point {
     }
 
     void normalize() {
-        double l = len();
+        T l = len();
         x /= l;
         y /= l;
     }
 };
+
+istream& operator >> (istream& in, Point& p) {
+    in >> p.x >> p.y;
+    return in;
+}
+
+ostream& operator << (ostream& out, const Point& p) {
+    out << "(" << p.x << ", " << p.y << ")";
+    return out;
+}
 
 T dot(const Point& a, const Point& b) {
     return a.x * b.x + a.y * b.y;
@@ -103,7 +113,7 @@ T sqrdist(const Point& a, const Point& b) {
     return (b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y);
 }
 
-double dist(const Point& a, const Point& b) {
+T dist(const Point& a, const Point& b) {
     return sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
 }
 
@@ -189,11 +199,11 @@ Point ProjectPointSegment(const Point& p, const Point& a, const Point& b) {
     return a + ab * coef;
 }
 
-double DistancePointLine(const Point& p, const Point& a, const Point& b) {
+T DistancePointLine(const Point& p, const Point& a, const Point& b) {
     return dist(p, ProjectPointLine(p, a, b));
 }
 
-double DistancePointSegment(const Point& p, const Point& a, const Point& b) {
+T DistancePointSegment(const Point& p, const Point& a, const Point& b) {
     return dist(p, ProjectPointSegment(p, a, b));
 }
 
@@ -235,44 +245,47 @@ tuple<T, T, T> LineEquation(const Point& a, const Point& b) {
     return make_tuple(ort.x, ort.y, c);
 }
 
-Point LineIntersection(const Point& a, const Point& b, const Point& c, const Point& d) {
-    assert(!LinesParallel(a, b, c, d) && a != b && c != d);
+vector<Point> LineIntersection(const Point& a, const Point& b, const Point& c, const Point& d) {
+    if(LinesParallel(a, b, c, d) || a == b || c == d)
+        return {};
     Point ab = b - a; 
     Point dc = c - d; 
     Point ac = c - a;
-    return a + ab * cross(ac, dc) / cross(ab, dc);
+    return {a + ab * cross(ac, dc) / cross(ab, dc)};
 }
+
 
 vector<Point> LineCircleIntersection(const Point& a, const Point& b, const Point& c, const T& r) {
-    vector<Point> ret;
     Point ab = b - a;
+    ab.normalize();
     Point ac = c - a;
-    T A = dot(ab, ab);
-    T B = dot(ac, ab);
-    T C = dot(ac, ac) - r*r;
-    T D = B*B - A*C;
-    if (D < -EPS) 
-        return ret;
-    ret.push_back(c + ac + ab *
-        (-B + sqrt(D+EPS)) / A);
-    if (D > EPS)
-        ret.push_back(c + ac + ab * 
-            (-B - sqrt(D)) / A);
-    return ret;
+    T distCenterLine = cross(ab, ac);
+    Point lineMid = c + ab.rotateCCW90() * distCenterLine;
+    if (r < distCenterLine) {
+        return {};
+    }
+    T expandFromMid = sqrt(r * r - ac.sqrlen());
+    if (expandFromMid > EPS) {
+        return {lineMid + ab * expandFromMid, lineMid - ab * expandFromMid};
+    }
+    return {lineMid};
 }
 
-vector<Point> CircleCircleIntersection(const Point& a, double r, const Point& b, double R) {
-  vector<Point> ret;
-  T d = sqrt(dist(a, b));
-  if (d > r + R || d + min(r, R) < max(r, R)) 
-    return ret;
-  double x = (d * d - R * R + r * r) / (2 * d);
-  double y = sqrt(r * r - x * x);
-  Point v = (b - a) / d;
-  ret.push_back(a + v * x + v.rotateCCW90() * y);
-  if (y > 0)
-    ret.push_back(a + v * x - v.rotateCCW90() * y);
-  return ret;
+vector<Point> CircleIntersection(const Point& a, T r, const Point& b, T R) {
+    Point ab = b - a;
+    T d = ab.len();
+    if (d > r + R || d + min(r, R) <= max(r, R)){
+        return {};
+    }
+    T aHeight = (d * d - R * R + r * r) / (2 * d);
+    T expandFromMid = sqrt(r * r - aHeight * aHeight);
+    ab.normalize();
+    Point lineMid = a + ab * aHeight;
+    Point perpab = ab.rotateCCW90();
+    if (expandFromMid > EPS) {
+        return {lineMid + perpab * expandFromMid, lineMid - perpab * expandFromMid};
+    }
+    return {lineMid};
 }
 
 int main() {
